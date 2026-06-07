@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: docker.m.daocloud.io/library/mysql:8.0
+    container_name: universal-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: universal
+      MYSQL_ROOT_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./init-sql:/docker-entrypoint-initdb.d
+    networks:
+      - universal-network
+
+  # Redis 缓存
+  redis:
+    image: docker.m.daocloud.io/library/redis:alpine
+    container_name: universal-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - universal-network
+
+  # 后端服务
+  universal-server:
+    build: ./server
+    container_name: universal-server
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - SPRING_DATASOURCE_DRUID_PASSWORD=123456
+    ports:
+      - "8070:8070"
+    volumes:
+      - ./uploads:/data/uploads
+    networks:
+      - universal-network
+
+  # 前端服务
+  universal-web:
+    image: docker.m.daocloud.io/library/nginx:stable-alpine
+    container_name: universal-web
+    restart: always
+    depends_on:
+      - universal-server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./uploads:/data/uploads
+      - ./web:/usr/share/nginx/html
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - universal-network
+
+networks:
+  universal-network:
+    driver: bridge
