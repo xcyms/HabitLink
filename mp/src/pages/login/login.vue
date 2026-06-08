@@ -128,7 +128,7 @@ function handleBack() {
       <!-- Logo 区域 -->
       <view class="mb-8 flex items-center gap-3">
         <view class="h-14 w-14 flex items-center justify-center rounded-2xl bg-blue-500">
-          <div class="i-solar:coffee-bold text-3xl text-white" />
+          <div class="i-solar-home-2-bold text-3xl text-white" />
         </view>
         <view>
           <view class="text-xl text-gray-900 font-bold">

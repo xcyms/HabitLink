@@ -17,7 +17,16 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: '管理',
+    label: '习惯业务',
+    type: 'group',
+    children: [
+      { key: '/habits', label: '习惯管理', icon: 'i-fa6-solid:list-check' },
+      { key: '/habit-records', label: '打卡记录', icon: 'i-fa6-solid:calendar-check' },
+      { key: '/habit-stats', label: '习惯统计', icon: 'i-fa6-solid:chart-line' },
+    ],
+  },
+  {
+    label: '系统管理',
     type: 'group',
     roles: ['ADMIN'],
     children: [

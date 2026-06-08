@@ -8,6 +8,12 @@ onLaunch(() => {
 </script>
 
 <style lang="scss">
+@import '@/uni.scss';
+
+/**
+ * 应用级基础样式。
+ * 这里负责引入全局视觉样式，并保留主题容器的背景控制。
+ */
 page {
   background-color: #f8f9fa;
   transition: background-color 0.3s;

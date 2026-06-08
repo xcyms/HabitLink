@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import type { ThemeColorOption } from '@/composables/useManualTheme'
 import { ref, watch } from 'vue'
-import { themeColorOptions, useManualTheme } from '@/composables/useManualTheme'
 import { DEFAULT_AVATAR } from '@/utils/constants'
 
 definePage({
@@ -17,31 +15,41 @@ const user = useAuthStore()
 const router = useRouter()
 const toast = useToast()
 const loading = ref(false)
-const showContactPopup = ref(false)
-const { statusBarHeight } = useSystemInfo()
 
-// 主题管理
-const {
-  theme,
-  isDark,
-  followSystem,
-  currentThemeColor,
-  toggleTheme,
-  setFollowSystem,
-  selectThemeColor,
-} = useManualTheme()
-
-const showThemeSheet = ref(false)
-const showThemeColorSheet = ref(false)
-
+/**
+ * 获取当前登录用户信息。
+ * 页面需要用到头像、昵称等展示信息。
+ */
 const { send: getUserInfo } = useRequest(() => Apis.universal.getUserInfo({}), {
   immediate: false,
 })
 
+/**
+ * 调用后端退出登录接口。
+ */
 const { send: logout } = useRequest(() => Apis.universal.logout({}), {
   immediate: false,
 })
 
+/**
+ * 顶部用户标题。
+ */
+const profileTitle = computed(() => {
+  return user.isLoggedIn ? user.userName : '个人中心'
+})
+
+/**
+ * 顶部用户说明。
+ */
+const profileDesc = computed(() => {
+  return user.isLoggedIn
+    ? '继续把你的习惯、记录和统计放在一个顺手的位置。'
+    : '登录后查看你的习惯、记录和统计。'
+})
+
+/**
+ * 执行退出登录。
+ */
 async function doLogout() {
   loading.value = true
   try {
@@ -52,83 +60,70 @@ async function doLogout() {
     toast.success('退出登录成功')
     user.logout()
   }
-  catch (error) {
+  catch (error: any) {
     console.error('退出登录失败:', error)
-    toast.error('退出登录失败')
+    toast.error(error.message || '退出登录失败')
   }
   finally {
     loading.value = false
   }
 }
 
+/**
+ * 跳转到登录页。
+ */
 function goLogin() {
   if (!user.isLoggedIn) {
     router.push({ name: 'login' })
   }
 }
 
-function handleMenuClick(type: string) {
-  if (type === 'about') {
-    router.push({ name: 'about' })
-  }
-  else if (type === 'theme') {
-    showThemeSheet.value = true
-  }
-  else if (type === 'themeColor') {
-    showThemeColorSheet.value = true
-  }
-  else {
-    showContactPopup.value = true
-  }
+/**
+ * 打开我的习惯页。
+ */
+function goHabitList() {
+  router.push({ name: 'habit-list' })
 }
 
-function handleThemeSelect(mode: 'light' | 'dark' | 'system') {
-  if (mode === 'system') {
-    setFollowSystem(true)
-  }
-  else {
-    toggleTheme(mode)
-  }
-  showThemeSheet.value = false
-  toast.success(`已切换到${mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}模式`)
+/**
+ * 打开习惯创建页。
+ */
+function goCreateHabit() {
+  router.push({ name: 'habit-edit' })
 }
 
-function handleThemeColorSelect(option: ThemeColorOption) {
-  selectThemeColor(option)
-  showThemeColorSheet.value = false
-  toast.success(`已切换到${option.name}主题色`)
+/**
+ * 打开记录页。
+ */
+function goRecords() {
+  router.pushTab({ name: 'records' })
 }
 
-function copyEmail() {
-  uni.setClipboardData({
-    data: 'lewisdeemail@163.com',
-    success: () => {
-      toast.success('邮箱已复制')
-      showContactPopup.value = false
-    },
-  })
+/**
+ * 打开统计页。
+ */
+function goStats() {
+  router.pushTab({ name: 'stats' })
 }
 
-// 监听登录状态变化，重新加载数据
+/**
+ * 在登录状态变化时自动刷新用户信息。
+ */
 watch(
   () => user.isLoggedIn,
   async (newVal) => {
-    if (newVal) {
-      loading.value = true
-      try {
-        const userRes = await getUserInfo()
+    if (!newVal) {
+      return
+    }
 
-        if (userRes.code === 200 && userRes.data) {
-          // 适配 UserDTO 到 Store 中的 User 类型
-          user.updateUser(userRes.data)
-        }
+    try {
+      const userRes = await getUserInfo()
+      if (userRes.code === 200 && userRes.data) {
+        user.updateUser(userRes.data)
       }
-      catch (error) {
-        console.error('获取个人信息失败:', error)
-      }
-      finally {
-        loading.value = false
-      }
+    }
+    catch (error) {
+      console.error('获取用户信息失败:', error)
     }
   },
   { immediate: true },
@@ -136,375 +131,159 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 pb-10 dark:bg-black">
-    <!-- 顶部背景和用户信息区域 -->
-    <div class="relative overflow-hidden bg-white pb-12 dark:bg-gray-900">
-      <!-- 动态背景装饰 -->
-      <div class="absolute h-80 w-80 rounded-full bg-blue-50/50 blur-3xl -right-20 -top-20 dark:bg-blue-900/10" />
-      <div class="absolute top-10 h-60 w-60 rounded-full bg-purple-50/30 blur-3xl -left-10 dark:bg-purple-900/10" />
+  <view class="habit-page">
+    <view class="habit-shell">
+      <habit-page-header
+        :tag="user.isLoggedIn ? '个人中心' : '欢迎使用 HabitLink'"
+        :title="profileTitle"
+        :desc="profileDesc"
+        :action-text="user.isLoggedIn ? '我的习惯' : '去登录'"
+        :action-disabled="loading"
+        @action="user.isLoggedIn ? goHabitList() : goLogin()"
+      >
+        <template #metrics>
+          <view class="grid grid-cols-3 gap-3">
+            <view class="rounded-[24rpx] bg-white/12 px-4 py-4 backdrop-blur">
+              <view class="text-xs text-white/70">
+                账号状态
+              </view>
+              <view class="mt-2 text-2xl font-semibold">
+                {{ user.isLoggedIn ? '已登录' : '未登录' }}
+              </view>
+            </view>
+            <view class="rounded-[24rpx] bg-white/12 px-4 py-4 backdrop-blur">
+              <view class="text-xs text-white/70">
+                当前版本
+              </view>
+              <view class="mt-2 text-base font-semibold">
+                基础版
+              </view>
+            </view>
+            <view class="rounded-[24rpx] bg-white/12 px-4 py-4 backdrop-blur">
+              <view class="text-xs text-white/70">
+                常用入口
+              </view>
+              <view class="mt-2 text-2xl font-semibold">
+                4
+              </view>
+            </view>
+          </view>
+        </template>
+      </habit-page-header>
 
-      <!-- 用户基本信息 -->
-      <div class="relative z-10 flex flex-col items-center pt-16" :style="{ paddingTop: `${statusBarHeight + 40}px` }">
-        <!-- 左上角功能区 (避开胶囊按钮) -->
-        <div class="absolute left-6 flex items-center gap-3" :style="{ top: `${statusBarHeight + 10}px` }">
-          <div
-            class="h-9 w-9 flex items-center justify-center rounded-full bg-white/60 shadow-sm backdrop-blur-md transition-all active:scale-90 dark:bg-black/30"
-            @tap="handleMenuClick('theme')"
-          >
-            <div
-              :class="followSystem ? 'i-solar-clapperboard-edit-bold-duotone' : (isDark ? 'i-solar-moon-bold-duotone' : 'i-solar-sun-2-bold-duotone')"
-              class="text-lg" :style="{ color: currentThemeColor.primary }"
-            />
-          </div>
-          <div
-            class="h-9 w-9 flex items-center justify-center rounded-full bg-white/60 shadow-sm backdrop-blur-md transition-all active:scale-90 dark:bg-black/30"
-            @tap="handleMenuClick('themeColor')"
-          >
-            <div
-              class="h-4.5 w-4.5 border-2 border-white rounded-full shadow-inner dark:border-gray-800"
-              :style="{ backgroundColor: currentThemeColor.primary }"
-            />
-          </div>
-        </div>
-
-        <div class="relative mb-4">
-          <div class="absolute inset-0 scale-110 rounded-full bg-blue-100/50 blur-md dark:bg-blue-900/30" />
+      <view class="habit-panel mt-4 p-5">
+        <view class="flex items-center gap-4">
           <image
-            :src="user.isLoggedIn ? getImageUrl(user.userAvatar) : DEFAULT_AVATAR" mode="aspectFill"
-            class="relative h-24 w-24 border-4 border-white rounded-full shadow-blue-100/50 shadow-xl dark:border-gray-800 dark:shadow-none"
+            :src="user.isLoggedIn ? getImageUrl(user.userAvatar) : DEFAULT_AVATAR"
+            mode="aspectFill"
+            class="h-16 w-16 rounded-full border-4 border-[#EAF8F6]"
           />
-        </div>
-        <div class="flex flex-col items-center" @click="goLogin">
-          <div class="text-[16px] text-gray-900 font-600 tracking-tight dark:text-gray-100">
-            {{ user.isLoggedIn ? user.userName : '点击登录体验更多' }}
-          </div>
-          <div
-            class="mt-1 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-0.5 text-[11px] text-gray-400 font-medium dark:bg-gray-800 dark:text-gray-500"
-          >
-            <wd-icon name="user" size="12px" />
-            <span>{{ user.isLoggedIn ? (user.user?.email || 'Premium User') : '未授权访问' }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+          <view class="min-w-0 flex-1">
+            <view class="text-base text-[#16332F] font-semibold">
+              {{ user.isLoggedIn ? user.userName : '点击登录开始使用' }}
+            </view>
+            <view class="mt-1 text-sm text-[#54706B] leading-6">
+              {{ user.isLoggedIn ? '你的习惯空间已经准备好。' : '登录后开启你的个人习惯空间。' }}
+            </view>
+          </view>
+        </view>
+      </view>
 
-    <!-- 功能菜单列表 -->
-    <div class="mt-4 px-5">
-      <div
-        class="overflow-hidden rounded-3xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:bg-gray-900 dark:shadow-none"
-      >
-        <div class="py-2 space-y-1">
-          <div
-            class="flex items-center justify-between p-4 transition-colors active:bg-gray-50 dark:active:bg-gray-800"
-            @tap="handleMenuClick('about')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-10 w-10 flex items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-              >
-                <div class="i-solar-info-circle-bold-duotone text-xl" />
-              </div>
-              <span class="text-[15px] text-gray-700 font-medium dark:text-gray-200">关于系统</span>
-            </div>
-            <div class="i-solar-alt-arrow-right-linear text-gray-300" />
-          </div>
+      <view class="mt-5">
+        <view class="habit-group-header">
+          <view class="habit-section-title">
+            快捷入口
+          </view>
+          <view class="text-xs text-[#90A29F]">
+            常用功能
+          </view>
+        </view>
 
-          <div class="mx-4 h-[1px] bg-gray-50 dark:bg-gray-800" />
+        <view class="habit-grid">
+          <view class="habit-feature-card" @tap="goHabitList">
+            <view class="h-11 w-11 flex items-center justify-center rounded-[22rpx] bg-[#0891B2] text-white shadow-[0_10px_20px_rgba(8,145,178,0.22)]">
+              <view class="i-solar-notebook-bold text-[24rpx]" />
+            </view>
+            <view class="habit-feature-card__title">
+              我的习惯
+            </view>
+            <view class="habit-feature-card__desc">
+              统一管理已创建的习惯
+            </view>
+          </view>
 
-          <div
-            class="flex items-center justify-between p-4 transition-colors active:bg-gray-50 dark:active:bg-gray-800"
-            @tap="handleMenuClick('support')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-10 w-10 flex items-center justify-center rounded-2xl bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400"
-              >
-                <div class="i-solar-heart-bold-duotone text-xl" />
-              </div>
-              <span class="text-[15px] text-gray-700 font-medium dark:text-gray-200">赞赏支持</span>
-            </div>
-            <div class="i-solar-alt-arrow-right-linear text-gray-300" />
-          </div>
+          <view class="habit-feature-card" @tap="goCreateHabit">
+            <view class="h-11 w-11 flex items-center justify-center rounded-[22rpx] bg-[#0F766E] text-white shadow-[0_10px_20px_rgba(15,118,110,0.22)]">
+              <view class="i-solar-add-circle-bold text-[24rpx]" />
+            </view>
+            <view class="habit-feature-card__title">
+              新建习惯
+            </view>
+            <view class="habit-feature-card__desc">
+              快速创建新的目标计划
+            </view>
+          </view>
 
-          <div class="mx-4 h-[1px] bg-gray-50 dark:bg-gray-800" />
+          <view class="habit-feature-card" @tap="goRecords">
+            <view class="h-11 w-11 flex items-center justify-center rounded-[22rpx] bg-[#16A34A] text-white shadow-[0_10px_20px_rgba(22,163,74,0.2)]">
+              <view class="i-solar-checklist-bold text-[24rpx]" />
+            </view>
+            <view class="habit-feature-card__title">
+              查看记录
+            </view>
+            <view class="habit-feature-card__desc">
+              回看每一次完成和备注
+            </view>
+          </view>
 
-          <div
-            class="flex items-center justify-between p-4 transition-colors active:bg-gray-50 dark:active:bg-gray-800"
-            @tap="handleMenuClick('contact')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-10 w-10 flex items-center justify-center rounded-2xl bg-orange-50 text-orange-500 dark:bg-orange-900/20 dark:text-orange-400"
-              >
-                <div class="i-solar-link-bold-duotone text-xl" />
-              </div>
-              <span class="text-[15px] text-gray-700 font-medium dark:text-gray-200">合作勾搭</span>
-            </div>
-            <div class="i-solar-alt-arrow-right-linear text-gray-300" />
-          </div>
+          <view class="habit-feature-card" @tap="goStats">
+            <view class="h-11 w-11 flex items-center justify-center rounded-[22rpx] bg-[#F59E0B] text-white shadow-[0_10px_20px_rgba(245,158,11,0.2)]">
+              <view class="i-solar-widget-4-bold text-[24rpx]" />
+            </view>
+            <view class="habit-feature-card__title">
+              统计分析
+            </view>
+            <view class="habit-feature-card__desc">
+              看见坚持背后的真实变化
+            </view>
+          </view>
+        </view>
+      </view>
 
-          <div class="mx-4 h-[1px] bg-gray-50 dark:bg-gray-800" />
+      <view class="habit-panel mt-5 p-5">
+        <view class="flex items-start gap-3">
+          <view class="h-11 w-11 shrink-0 flex items-center justify-center rounded-[22rpx] bg-[#FFF7EA] text-[#B7791F]">
+            <view class="i-solar-info-circle-bold text-[24rpx]" />
+          </view>
+          <view class="min-w-0 flex-1">
+            <view class="habit-section-title">
+              当前版本说明
+            </view>
+            <view class="mt-2 habit-section-desc">
+              第一版已经接入了习惯创建、首页打卡、记录查看和统计查看的核心能力。后续可以继续补充提醒、补打卡、趋势图和更完整的个人设置。
+            </view>
+          </view>
+        </view>
+      </view>
 
-          <div
-            class="flex items-center justify-between p-4 transition-colors active:bg-gray-50 dark:active:bg-gray-800"
-            @tap="handleMenuClick('feedback')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-10 w-10 flex items-center justify-center rounded-2xl bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400"
-              >
-                <div class="i-solar-chat-round-dots-bold-duotone text-xl" />
-              </div>
-              <span class="text-[15px] text-gray-700 font-medium dark:text-gray-200">问题反馈</span>
-            </div>
-            <div class="i-solar-alt-arrow-right-linear text-gray-300" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部操作按钮 -->
-    <div v-if="user.isLoggedIn" class="mt-10 px-10">
-      <div
-        class="flex items-center justify-center gap-2 rounded-2xl bg-gray-900 py-4 text-center text-[16px] text-white font-bold shadow-gray-200 shadow-xl transition-all active:scale-[0.98] dark:bg-gray-800 active:opacity-90 dark:shadow-none"
-        :class="{ 'opacity-70 pointer-events-none': loading }" @tap="doLogout"
-      >
-        <wd-loading v-if="loading" size="18px" color="#fff" custom-class="mr-2" />
-        <div v-else class="i-solar-logout-2-bold text-lg" />
-        <span>{{ loading ? '正在退出...' : '退出当前账号' }}</span>
-      </div>
-    </div>
-    <div v-else class="mt-10 px-10">
-      <div
-        class="rounded-2xl bg-blue-600 py-4 text-center text-[16px] text-white font-bold shadow-blue-100 shadow-xl transition-all active:scale-[0.98] active:opacity-90 dark:shadow-none"
-        @tap="router.push({ name: 'login' })"
-      >
-        立即登录
-      </div>
-    </div>
-    <!-- 联系方式弹窗 -->
-    <wd-popup
-      v-model="showContactPopup" position="bottom" round custom-class="rounded-t-[40rpx] overflow-hidden"
-      :z-index="10002" safe-area-inset-bottom
-    >
-      <div class="bg-white px-6 pb-8 pt-6 dark:bg-gray-900">
-        <div class="mb-6 flex flex-col items-center">
-          <div
-            class="mb-4 h-16 w-16 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-          >
-            <div class="i-solar-letter-bold-duotone text-3xl" />
-          </div>
-          <span class="text-lg text-gray-900 font-bold dark:text-gray-100">联系作者</span>
-          <span class="mt-1 text-center text-sm text-gray-400 dark:text-gray-500">如果您有任何问题或建议，欢迎随时联系</span>
-        </div>
-
-        <div
-          class="flex items-center justify-between rounded-2xl bg-gray-50 p-4 transition-all active:scale-[0.98] dark:bg-gray-800"
-          @tap="copyEmail"
+      <view class="mt-5">
+        <view
+          v-if="!user.isLoggedIn"
+          class="habit-primary-button py-4 text-center text-sm font-semibold"
+          @tap="goLogin"
         >
-          <div class="flex flex-col">
-            <span class="mb-0.5 text-[10px] text-gray-400 font-bold tracking-wider uppercase dark:text-gray-500">Email
-              Address</span>
-            <span class="text-[16px] text-gray-800 font-600 dark:text-gray-200">lewisdeemail@163.com</span>
-          </div>
-          <div
-            class="border border-blue-50 rounded-lg bg-white px-3 py-1.5 text-xs text-blue-600 font-bold shadow-sm dark:border-blue-900/50 dark:bg-gray-700 dark:text-blue-400"
-          >
-            点击复制
-          </div>
-        </div>
+          立即登录
+        </view>
 
-        <div
-          class="mt-8 w-full rounded-2xl bg-gray-900 py-4 text-center text-[16px] text-white font-bold shadow-gray-200 shadow-lg transition-all active:scale-[0.99] dark:bg-gray-800 active:opacity-90 dark:shadow-none"
-          @tap="showContactPopup = false"
+        <view
+          v-else
+          class="habit-dark-button py-4 text-center text-sm font-semibold"
+          :class="{ 'opacity-70 pointer-events-none': loading }"
+          @tap="doLogout"
         >
-          我知道了
-        </div>
-
-        <!-- 额外的底部占位，确保在非安全区机型上也有足够间距 -->
-        <div class="h-4 w-full" />
-      </div>
-    </wd-popup>
-
-    <!-- 主题模式选择弹窗 -->
-    <wd-popup
-      v-model="showThemeSheet" position="bottom" round custom-class="rounded-t-[40rpx] overflow-hidden"
-      :z-index="10002" safe-area-inset-bottom
-    >
-      <div class="bg-white px-6 pb-8 pt-6 dark:bg-gray-900">
-        <div class="mb-6 flex flex-col items-center">
-          <div
-            class="mb-4 h-16 w-16 flex items-center justify-center rounded-full bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
-          >
-            <wd-icon name="translate-bold" size="32px" />
-          </div>
-          <span class="text-lg text-gray-900 font-bold dark:text-gray-100">选择主题模式</span>
-          <span class="mt-1 text-center text-sm text-gray-400 dark:text-gray-500">选择您偏好的界面主题</span>
-        </div>
-
-        <div class="space-y-3">
-          <!-- 浅色模式 -->
-          <div
-            class="flex items-center justify-between rounded-2xl p-4 transition-all active:scale-[0.98]"
-            :class="!followSystem && theme === 'light' ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800'"
-            @tap="handleThemeSelect('light')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-12 w-12 flex items-center justify-center rounded-xl"
-                :class="!followSystem && theme === 'light' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300'"
-              >
-                <div class="i-solar-sun-2-bold-duotone text-2xl" />
-              </div>
-              <div class="flex flex-col">
-                <span
-                  class="text-[15px] font-semibold"
-                  :class="!followSystem && theme === 'light' ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'"
-                >
-                  浅色模式
-                </span>
-                <span
-                  class="text-xs"
-                  :class="!followSystem && theme === 'light' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-500'"
-                >
-                  始终使用浅色主题
-                </span>
-              </div>
-            </div>
-            <div
-              v-if="!followSystem && theme === 'light'"
-              class="h-6 w-6 flex items-center justify-center rounded-full bg-blue-600"
-            >
-              <wd-icon name="check" size="14px" color="#fff" />
-            </div>
-          </div>
-
-          <!-- 深色模式 -->
-          <div
-            class="flex items-center justify-between rounded-2xl p-4 transition-all active:scale-[0.98]"
-            :class="!followSystem && theme === 'dark' ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800'"
-            @tap="handleThemeSelect('dark')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-12 w-12 flex items-center justify-center rounded-xl"
-                :class="!followSystem && theme === 'dark' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300'"
-              >
-                <div class="i-solar-moon-bold-duotone text-2xl" />
-              </div>
-              <div class="flex flex-col">
-                <span
-                  class="text-[15px] font-semibold"
-                  :class="!followSystem && theme === 'dark' ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'"
-                >
-                  深色模式
-                </span>
-                <span
-                  class="text-xs"
-                  :class="!followSystem && theme === 'dark' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-500'"
-                >
-                  始终使用深色主题
-                </span>
-              </div>
-            </div>
-            <div
-              v-if="!followSystem && theme === 'dark'"
-              class="h-6 w-6 flex items-center justify-center rounded-full bg-blue-600"
-            >
-              <wd-icon name="check" size="14px" color="#fff" />
-            </div>
-          </div>
-
-          <!-- 跟随系统 -->
-          <div
-            class="flex items-center justify-between rounded-2xl p-4 transition-all active:scale-[0.98]"
-            :class="followSystem ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800'"
-            @tap="handleThemeSelect('system')"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="h-12 w-12 flex items-center justify-center rounded-xl"
-                :class="followSystem ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300'"
-              >
-                <div class="i-solar-clapperboard-edit-bold-duotone text-2xl" />
-              </div>
-              <div class="flex flex-col">
-                <span
-                  class="text-[15px] font-semibold"
-                  :class="followSystem ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'"
-                >
-                  跟随系统
-                </span>
-                <span
-                  class="text-xs"
-                  :class="followSystem ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-500'"
-                >
-                  根据系统设置自动切换
-                </span>
-              </div>
-            </div>
-            <div v-if="followSystem" class="h-6 w-6 flex items-center justify-center rounded-full bg-blue-600">
-              <wd-icon name="check" size="14px" color="#fff" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="mt-8 w-full rounded-2xl bg-gray-900 py-4 text-center text-[16px] text-white font-bold shadow-gray-200 shadow-lg transition-all active:scale-[0.99] dark:bg-gray-800 active:opacity-90 dark:shadow-none"
-          @tap="showThemeSheet = false"
-        >
-          完成
-        </div>
-
-        <div class="h-4 w-full" />
-      </div>
-    </wd-popup>
-
-    <!-- 主题色选择弹窗 -->
-    <wd-popup
-      v-model="showThemeColorSheet" position="bottom" round custom-class="rounded-t-[40rpx] overflow-hidden"
-      :z-index="10002" safe-area-inset-bottom
-    >
-      <div class="bg-white px-6 pb-8 pt-6 dark:bg-gray-900">
-        <div class="mb-6 flex flex-col items-center">
-          <div
-            class="mb-4 h-16 w-16 flex items-center justify-center rounded-full bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400"
-          >
-            <div class="i-solar-palette-bold-duotone text-3xl" />
-          </div>
-          <span class="text-lg text-gray-900 font-bold dark:text-gray-100">选择主题色</span>
-          <span class="mt-1 text-center text-sm text-gray-400 dark:text-gray-500">选择您喜欢的主题颜色</span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div
-            v-for="option in themeColorOptions" :key="option.value"
-            class="flex flex-col items-center gap-3 rounded-2xl p-4 transition-all active:scale-[0.95]"
-            :class="currentThemeColor.value === option.value ? 'bg-gray-100' : 'bg-gray-50'"
-            @tap="handleThemeColorSelect(option)"
-          >
-            <div
-              class="h-14 w-14 flex items-center justify-center rounded-full transition-all"
-              :style="{ backgroundColor: option.primary }"
-            >
-              <div
-                v-if="currentThemeColor.value === option.value"
-                class="i-solar-check-read-bold text-2xl text-white"
-              />
-            </div>
-            <span class="text-xs text-gray-700 font-medium">{{ option.name }}</span>
-          </div>
-        </div>
-
-        <div
-          class="mt-8 w-full rounded-2xl bg-gray-900 py-4 text-center text-[16px] text-white font-bold shadow-gray-200 shadow-lg transition-all active:scale-[0.99] active:opacity-90"
-          @tap="showThemeColorSheet = false"
-        >
-          完成
-        </div>
-
-        <div class="h-4 w-full" />
-      </div>
-    </wd-popup>
-  </div>
+          {{ loading ? '正在退出登录...' : '退出当前账号' }}
+        </view>
+      </view>
+    </view>
+  </view>
 </template>

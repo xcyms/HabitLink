@@ -114,3 +114,82 @@ export interface Notice {
   createTime?: string
   updateTime?: string
 }
+
+/**
+ * 习惯表单 DTO。
+ */
+export interface Habit {
+  id?: number
+  userId?: number
+  name: string
+  description?: string
+  category?: string
+  icon?: string
+  color?: string
+  status?: number
+  startDate: string
+  endDate?: string | null
+  allowMakeup: number
+  makeupLimitDays: number
+  reminderEnabled: number
+  reminderTime?: string
+  sortOrder?: number
+  ruleType: 'DAILY' | 'WEEKLY'
+  ruleDays: number[]
+}
+
+/**
+ * 首页习惯卡片 DTO。
+ */
+export interface TodayHabit {
+  habitId: number
+  habitName: string
+  icon?: string
+  color?: string
+  category?: string
+  reminderTime?: string
+  currentStreak: number
+  todayChecked: number
+  todayDate: string
+  ruleText: string
+}
+
+/**
+ * 今日总览 DTO。
+ */
+export interface TodayOverview {
+  date: string
+  plannedCount: number
+  completedCount: number
+  completionRate: number
+  habits: TodayHabit[]
+}
+
+/**
+ * 打卡记录 DTO。
+ */
+export interface CheckInRecord {
+  id: number
+  habitId: number
+  habitName: string
+  recordDate: string
+  checkInTime: string
+  status: number
+  note?: string
+  isMakeup: number
+  source: string
+}
+
+/**
+ * 习惯统计 DTO。
+ */
+export interface HabitStats {
+  habitId: number
+  habitName: string
+  currentStreak: number
+  longestStreak: number
+  totalCheckInCount: number
+  completionRate7d: number
+  completionRate30d: number
+  lastCheckInDate?: string | null
+}

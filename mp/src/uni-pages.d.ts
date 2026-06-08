@@ -5,8 +5,12 @@
 
 type _LocationUrl =
   "/pages/index/index" |
+  "/pages/habit/edit" |
+  "/pages/habit/list" |
   "/pages/login/login" |
-  "/pages/me/me";
+  "/pages/me/me" |
+  "/pages/records/index" |
+  "/pages/stats/index";
 
 interface NavigateToOptions {
   url: _LocationUrl;
@@ -14,7 +18,7 @@ interface NavigateToOptions {
 interface RedirectToOptions extends NavigateToOptions {}
 
 interface SwitchTabOptions {
-  url: "/pages/index/index" | "/pages/me/me"
+  url: "/pages/index/index" | "/pages/records/index" | "/pages/stats/index" | "/pages/me/me"
 }
 
 type ReLaunchOptions = NavigateToOptions | SwitchTabOptions;

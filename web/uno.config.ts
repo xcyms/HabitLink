@@ -31,6 +31,9 @@ export default defineConfig({
     'i-fa6-solid:desktop',
     'i-fa6-solid:book',
     'i-fa6-solid:tags',
+    'i-fa6-solid:list-check',
+    'i-fa6-solid:calendar-check',
+    'i-fa6-solid:chart-line',
     // 顶部工具栏图标
     'i-fa6-solid:magnifying-glass',
     'i-fa6-solid:bell',

@@ -3,19 +3,28 @@ import { useManualTheme } from '@/composables/useManualTheme'
 
 const router = useRouter()
 const route = useRoute()
-const { activeTabbar, getTabbarItemValue, setTabbarItemActive, tabbarList } = useTabbar()
+const { safeAreaInsetsBottom } = useSystemInfo()
+const { activeTabbar, setTabbarItemActive, tabbarList } = useTabbar()
 const { theme, isDark, themeVars } = useManualTheme()
 
-const activeColor = computed(() => (themeVars.value as any).colorTheme || '#4D7FFF')
+/**
+ * 底部导航激活色。
+ * 这里固定为 HabitLink 新版主色，避免继续出现旧版蓝色调。
+ */
+const activeColor = '#0F766E'
 
+/**
+ * 根据导航项返回对应图标。
+ * 第二个和第三个图标使用更清晰的记录与概览语义。
+ */
 function getIconClass(item: any) {
   const iconMap: Record<string, { active: string, inactive: string }> = {
     'home-2': { active: 'i-solar-home-2-bold', inactive: 'i-solar-home-2-linear' },
-    'album': { active: 'i-solar-album-bold', inactive: 'i-solar-album-linear' },
-    'bell-bing': { active: 'i-solar-bell-bing-bold', inactive: 'i-solar-bell-bing-linear' },
+    'checklist-minimalistic': { active: 'i-solar-checklist-minimalistic-bold', inactive: 'i-solar-checklist-minimalistic-linear' },
+    'widget-4': { active: 'i-solar-widget-4-bold', inactive: 'i-solar-widget-4-linear' },
     'user-circle': { active: 'i-solar-user-circle-bold', inactive: 'i-solar-user-circle-linear' },
   }
-  const config = iconMap[item.icon]
+  const config = iconMap[item.icon] || iconMap['home-2']
   return item.active ? config.active : config.inactive
 }
 
@@ -23,6 +32,12 @@ function handleTabbarChange({ value }: { value: string }) {
   setTabbarItemActive(value)
   router.pushTab({ name: value })
 }
+
+/**
+ * 页面底部占位高度。
+ * 为固定底栏和安全区预留空间，避免页面内容被遮挡。
+ */
+const tabbarSpacerHeight = computed(() => `${118 + safeAreaInsetsBottom.value}px`)
 
 onMounted(() => {
   // #ifdef APP
@@ -51,38 +66,42 @@ export default {
     :theme="theme"
     :theme-vars="{
       ...themeVars,
+      colorTheme: activeColor,
       tabbarItemTitleFontSize: '13px',
     }"
   >
     <div class="page-wraper" :class="{ 'wot-theme-dark': isDark }">
       <slot />
-      <wd-gap safe-area-bottom height="var(--wot-tabbar-height, 50px)" />
-      <wd-tabbar
-        :model-value="activeTabbar.name" bordered safe-area-inset-bottom fixed
-        :active-color="activeColor"
-        @change="handleTabbarChange"
+      <view :style="{ height: tabbarSpacerHeight }" />
+
+      <view
+        class="habit-fixed-tabbar fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
+        :style="{ paddingBottom: `${safeAreaInsetsBottom}px` }"
       >
-        <wd-tabbar-item
-          v-for="(item, index) in tabbarList" :key="index" :name="item.name"
-          :value="getTabbarItemValue(item.name)" :title="item.title"
-          custom-class="!text-[13px]"
-        >
-          <template #icon>
-            <div
-              class="text-[16px] transition-all duration-300 ease-in-out" :class="[
-                getIconClass(item),
-                item.active ? 'scale-110' : 'scale-100 opacity-40',
-              ]"
-              :style="{
-                color: item.active ? activeColor : '#666',
-              }"
-            />
-          </template>
-        </wd-tabbar-item>
-      </wd-tabbar>
+        <view class="habit-float-tabbar pointer-events-auto">
+          <view
+            v-for="(item, index) in tabbarList"
+            :key="index"
+            class="habit-float-tabbar__item"
+            :class="{ 'habit-float-tabbar__item--active': item.active }"
+            @tap="handleTabbarChange({ value: item.name })"
+          >
+            <view
+              class="habit-float-tabbar__icon"
+              :class="{ 'habit-float-tabbar__icon--active': item.active }"
+              :style="{ color: item.active ? activeColor : '#90A29F' }"
+            >
+              <div :class="getIconClass(item)" />
+            </view>
+            <view
+              class="habit-float-tabbar__title"
+              :class="{ 'habit-float-tabbar__title--active': item.active }"
+            >
+              {{ item.title }}
+            </view>
+          </view>
+        </view>
+      </view>
     </div>
   </wd-config-provider>
 </template>
-
-<style scoped lang="scss">
-</style>

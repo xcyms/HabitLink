@@ -241,10 +241,10 @@ onUnmounted(() => {
             </div>
             <div v-if="!collapsed" class="min-w-0">
               <div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Universal Starter
+                HabitLink
               </div>
               <div class="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                Admin Workspace
+                管理员工作区
               </div>
             </div>
           </div>
