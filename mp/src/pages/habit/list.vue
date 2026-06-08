@@ -354,8 +354,12 @@ onPullDownRefresh(() => {
                   </view>
 
                   <view class="mt-4 flex flex-wrap gap-2">
-                    <text class="habit-pill habit-pill--muted">{{ getRuleText(habit) }}</text>
-                    <text class="habit-pill habit-pill--primary">开始于 {{ habit.startDate }}</text>
+                    <text class="habit-pill habit-pill--muted">
+                      {{ getRuleText(habit) }}
+                    </text>
+                    <text class="habit-pill habit-pill--primary">
+                      开始于 {{ habit.startDate }}
+                    </text>
                     <text v-if="habit.reminderEnabled === 1 && habit.reminderTime" class="habit-pill habit-pill--secondary">
                       提醒 {{ habit.reminderTime }}
                     </text>
@@ -421,8 +425,12 @@ onPullDownRefresh(() => {
                     {{ habit.description || '这条习惯目前处于暂停状态，随时可以继续。' }}
                   </view>
                   <view class="mt-4 flex flex-wrap gap-2">
-                    <text class="habit-pill habit-pill--muted">{{ getRuleText(habit) }}</text>
-                    <text class="habit-pill habit-pill--warning">已暂停</text>
+                    <text class="habit-pill habit-pill--muted">
+                      {{ getRuleText(habit) }}
+                    </text>
+                    <text class="habit-pill habit-pill--warning">
+                      已暂停
+                    </text>
                   </view>
                 </view>
                 <view class="habit-pill habit-pill--warning">

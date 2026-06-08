@@ -75,7 +75,7 @@ export default {
       <view :style="{ height: tabbarSpacerHeight }" />
 
       <view
-        class="habit-fixed-tabbar fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
+        class="habit-fixed-tabbar pointer-events-none fixed bottom-0 left-0 right-0 z-50"
         :style="{ paddingBottom: `${safeAreaInsetsBottom}px` }"
       >
         <view class="habit-float-tabbar pointer-events-auto">

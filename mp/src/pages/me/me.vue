@@ -176,7 +176,7 @@ watch(
           <image
             :src="user.isLoggedIn ? getImageUrl(user.userAvatar) : DEFAULT_AVATAR"
             mode="aspectFill"
-            class="h-16 w-16 rounded-full border-4 border-[#EAF8F6]"
+            class="h-16 w-16 border-4 border-[#EAF8F6] rounded-full"
           />
           <view class="min-w-0 flex-1">
             <view class="text-base text-[#16332F] font-semibold">
@@ -252,14 +252,14 @@ watch(
 
       <view class="habit-panel mt-5 p-5">
         <view class="flex items-start gap-3">
-          <view class="h-11 w-11 shrink-0 flex items-center justify-center rounded-[22rpx] bg-[#FFF7EA] text-[#B7791F]">
+          <view class="h-11 w-11 flex shrink-0 items-center justify-center rounded-[22rpx] bg-[#FFF7EA] text-[#B7791F]">
             <view class="i-solar-info-circle-bold text-[24rpx]" />
           </view>
           <view class="min-w-0 flex-1">
             <view class="habit-section-title">
               当前版本说明
             </view>
-            <view class="mt-2 habit-section-desc">
+            <view class="habit-section-desc mt-2">
               第一版已经接入了习惯创建、首页打卡、记录查看和统计查看的核心能力。后续可以继续补充提醒、补打卡、趋势图和更完整的个人设置。
             </view>
           </view>

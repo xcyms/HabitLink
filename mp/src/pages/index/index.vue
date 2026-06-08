@@ -73,16 +73,6 @@ const heroTitle = computed(() => {
 })
 
 /**
- * 顶部副标题。
- */
-const heroSubtitle = computed(() => {
-  if (!authStore.isLoggedIn) {
-    return '从一个很小的动作开始，节奏会一点点回到你手里。'
-  }
-  return completionText.value
-})
-
-/**
  * 首页完成率说明。
  */
 const completionText = computed(() => {
@@ -97,6 +87,16 @@ const completionText = computed(() => {
     return '已经有了不错的起势，继续把剩下的事情做完。'
   }
   return '先完成第一项，今天的节奏就会被带起来。'
+})
+
+/**
+ * 顶部副标题。
+ */
+const heroSubtitle = computed(() => {
+  if (!authStore.isLoggedIn) {
+    return '从一个很小的动作开始，节奏会一点点回到你手里。'
+  }
+  return completionText.value
 })
 
 /**
@@ -254,14 +254,14 @@ onPullDownRefresh(() => {
 
       <view v-if="!authStore.isLoggedIn" class="habit-panel mt-4 p-5">
         <view class="flex items-start gap-4">
-          <view class="h-14 w-14 shrink-0 flex items-center justify-center rounded-[24rpx] bg-[#E6F7F4] text-[#0F766E]">
+          <view class="h-14 w-14 flex shrink-0 items-center justify-center rounded-[24rpx] bg-[#E6F7F4] text-[#0F766E]">
             <view class="i-solar-star-fall-bold text-[30rpx]" />
           </view>
           <view class="min-w-0 flex-1">
             <view class="habit-section-title">
               先搭一条属于自己的日常轨道
             </view>
-            <view class="mt-2 habit-section-desc">
+            <view class="habit-section-desc mt-2">
               登录后就可以创建习惯、每天打卡、查看记录和统计，先从一条最容易做到的小习惯开始。
             </view>
           </view>
@@ -269,16 +269,28 @@ onPullDownRefresh(() => {
 
         <view class="habit-grid mt-5">
           <view class="habit-feature-card">
-            <view class="text-sm text-[#16332F] font-semibold">创建习惯</view>
-            <view class="habit-feature-card__desc">从最容易开始的一条目标先起步。</view>
+            <view class="text-sm text-[#16332F] font-semibold">
+              创建习惯
+            </view>
+            <view class="habit-feature-card__desc">
+              从最容易开始的一条目标先起步。
+            </view>
           </view>
           <view class="habit-feature-card">
-            <view class="text-sm text-[#16332F] font-semibold">每日打卡</view>
-            <view class="habit-feature-card__desc">让行动有记录，让节奏能被看见。</view>
+            <view class="text-sm text-[#16332F] font-semibold">
+              每日打卡
+            </view>
+            <view class="habit-feature-card__desc">
+              让行动有记录，让节奏能被看见。
+            </view>
           </view>
           <view class="habit-feature-card habit-grid__span-2">
-            <view class="text-sm text-[#16332F] font-semibold">统计反馈</view>
-            <view class="habit-feature-card__desc">坚持多久、完成多少、哪里在波动，都能慢慢沉淀下来。</view>
+            <view class="text-sm text-[#16332F] font-semibold">
+              统计反馈
+            </view>
+            <view class="habit-feature-card__desc">
+              坚持多久、完成多少、哪里在波动，都能慢慢沉淀下来。
+            </view>
           </view>
         </view>
 
@@ -297,17 +309,19 @@ onPullDownRefresh(() => {
                 </view>
                 <view class="habit-overview-card__value">
                   {{ overview.completedCount }}
-                  <text class="text-[28rpx] text-[#90A29F] font-medium">/ {{ overview.plannedCount }}</text>
+                  <text class="text-[28rpx] text-[#90A29F] font-medium">
+                    / {{ overview.plannedCount }}
+                  </text>
                 </view>
                 <view class="habit-overview-card__subvalue">
                   {{ completionText }}
                 </view>
               </view>
-              <view class="h-20 w-20 shrink-0 flex items-center justify-center rounded-[26rpx] bg-[#E6F7F4] text-[#0F766E]">
+              <view class="h-20 w-20 flex shrink-0 items-center justify-center rounded-[26rpx] bg-[#E6F7F4] text-[#0F766E]">
                 <view class="i-solar-widget-4-bold text-[34rpx]" />
               </view>
             </view>
-            <view class="mt-4 habit-progress-track">
+            <view class="habit-progress-track mt-4">
               <view class="habit-progress-fill transition-all duration-500" :style="{ width: `${completionRate}%` }" />
             </view>
           </view>
@@ -377,9 +391,15 @@ onPullDownRefresh(() => {
                   </view>
 
                   <view class="mt-4 flex flex-wrap gap-2">
-                    <text class="habit-pill habit-pill--muted">{{ habit.ruleText || '规则待补充' }}</text>
-                    <text v-if="habit.reminderTime" class="habit-pill habit-pill--secondary">提醒 {{ habit.reminderTime }}</text>
-                    <text class="habit-pill habit-pill--primary">连续 {{ habit.currentStreak }} 天</text>
+                    <text class="habit-pill habit-pill--muted">
+                      {{ habit.ruleText || '规则待补充' }}
+                    </text>
+                    <text v-if="habit.reminderTime" class="habit-pill habit-pill--secondary">
+                      提醒 {{ habit.reminderTime }}
+                    </text>
+                    <text class="habit-pill habit-pill--primary">
+                      连续 {{ habit.currentStreak }} 天
+                    </text>
                   </view>
                 </view>
                 <view
@@ -397,7 +417,9 @@ onPullDownRefresh(() => {
                   @tap="goHabitRecords(habit)"
                 >
                   <text>查看这条习惯的历史记录</text>
-                  <text class="text-[#0F766E] font-semibold">去查看</text>
+                  <text class="text-[#0F766E] font-semibold">
+                    去查看
+                  </text>
                 </view>
               </view>
             </view>
@@ -436,8 +458,12 @@ onPullDownRefresh(() => {
                     </view>
                   </view>
                   <view class="mt-4 flex flex-wrap gap-2">
-                    <text class="habit-pill habit-pill--muted">{{ habit.ruleText || '规则待补充' }}</text>
-                    <text class="habit-pill habit-pill--success">连续 {{ habit.currentStreak }} 天</text>
+                    <text class="habit-pill habit-pill--muted">
+                      {{ habit.ruleText || '规则待补充' }}
+                    </text>
+                    <text class="habit-pill habit-pill--success">
+                      连续 {{ habit.currentStreak }} 天
+                    </text>
                   </view>
                 </view>
                 <view class="habit-pill habit-pill--success">

@@ -268,9 +268,9 @@ onShow(() => {
     <view class="overflow-hidden rounded-[28rpx] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
       <view class="relative overflow-hidden from-[#111827] via-[#2563eb] to-[#60a5fa] bg-gradient-to-r p-5 text-white">
         <view class="absolute h-32 w-32 rounded-full bg-white/10 blur-2xl -right-4 -top-6" />
-        <view class="absolute h-24 w-24 rounded-full bg-blue-100/15 blur-xl left-6 bottom-0" />
+        <view class="absolute bottom-0 left-6 h-24 w-24 rounded-full bg-blue-100/15 blur-xl" />
         <view class="relative z-10 text-lg font-semibold">
-        {{ isEdit ? '编辑习惯' : '新建习惯' }}
+          {{ isEdit ? '编辑习惯' : '新建习惯' }}
         </view>
         <view class="relative z-10 mt-2 text-sm text-white/80 leading-6">
           用更清楚的规则和提醒，把想坚持的事真正安排进每天。

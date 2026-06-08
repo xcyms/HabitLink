@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { message, Modal } from 'ant-design-vue'
+import { Modal, message } from 'ant-design-vue'
 import type * as API from '../../types'
 import { deleteHabitApi, getHabitPageApi, pauseHabitApi, resumeHabitApi } from '../../api/habit.ts'
 

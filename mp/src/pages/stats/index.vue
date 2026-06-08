@@ -218,28 +218,40 @@ onShow(async () => {
               </view>
               <view class="habit-overview-card__value">
                 {{ stats.currentStreak }}
-                <text class="text-[28rpx] text-[#90A29F] font-medium"> 天连续</text>
+                <text class="text-[28rpx] text-[#90A29F] font-medium">
+                  天连续
+                </text>
               </view>
               <view class="habit-overview-card__subvalue">
                 {{ streakLevelText }}
               </view>
             </view>
-            <view class="h-20 w-20 shrink-0 flex items-center justify-center rounded-[26rpx] bg-[#EAF8F6] text-[#0F766E]">
+            <view class="h-20 w-20 flex shrink-0 items-center justify-center rounded-[26rpx] bg-[#EAF8F6] text-[#0F766E]">
               <view class="i-solar-widget-4-bold text-[34rpx]" />
             </view>
           </view>
         </view>
 
         <view class="habit-overview-card">
-          <view class="habit-overview-card__label">最长连续</view>
-          <view class="habit-overview-card__value">{{ stats.longestStreak }}</view>
+          <view class="habit-overview-card__label">
+            最长连续
+          </view>
+          <view class="habit-overview-card__value">
+            {{ stats.longestStreak }}
+          </view>
         </view>
         <view class="habit-overview-card">
-          <view class="habit-overview-card__label">累计打卡</view>
-          <view class="habit-overview-card__value">{{ stats.totalCheckInCount }}</view>
+          <view class="habit-overview-card__label">
+            累计打卡
+          </view>
+          <view class="habit-overview-card__value">
+            {{ stats.totalCheckInCount }}
+          </view>
         </view>
         <view class="habit-overview-card habit-grid__span-2">
-          <view class="habit-overview-card__label">最近完成</view>
+          <view class="habit-overview-card__label">
+            最近完成
+          </view>
           <view class="mt-3 text-lg text-[#16332F] font-semibold">
             {{ stats.lastCheckInDate || '暂无记录' }}
           </view>
@@ -265,12 +277,12 @@ onShow(async () => {
               {{ stats.completionRate7d }}%
             </text>
           </view>
-          <view class="mt-3 habit-progress-track bg-[#DDF3F7]">
+          <view class="habit-progress-track mt-3 bg-[#DDF3F7]">
             <view class="h-full rounded-full bg-[#0891B2] transition-all duration-500" :style="{ width: completionRate7dWidth }" />
           </view>
         </view>
 
-        <view class="mt-3 habit-overview-card habit-overview-card--accent">
+        <view class="habit-overview-card habit-overview-card--accent mt-3">
           <view class="flex items-center justify-between text-sm">
             <text class="text-[#54706B]">
               近 30 天完成率
@@ -279,7 +291,7 @@ onShow(async () => {
               {{ stats.completionRate30d }}%
             </text>
           </view>
-          <view class="mt-3 habit-progress-track">
+          <view class="habit-progress-track mt-3">
             <view class="habit-progress-fill transition-all duration-500" :style="{ width: completionRate30dWidth }" />
           </view>
         </view>
