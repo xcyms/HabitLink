@@ -13,7 +13,6 @@ declare module 'vue' {
     GlobalToast: typeof import('./components/GlobalToast.vue')['default']
     HabitPageHeader: typeof import('./components/habit-page-header.vue')['default']
     WdConfigProvider: typeof import('wot-design-uni/components/wd-config-provider/wd-config-provider.vue')['default']
-    WdIcon: typeof import('wot-design-uni/components/wd-icon/wd-icon.vue')['default']
     WdMessageBox: typeof import('wot-design-uni/components/wd-message-box/wd-message-box.vue')['default']
     WdNotify: typeof import('wot-design-uni/components/wd-notify/wd-notify.vue')['default']
     WdToast: typeof import('wot-design-uni/components/wd-toast/wd-toast.vue')['default']

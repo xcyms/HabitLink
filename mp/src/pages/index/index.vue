@@ -183,19 +183,6 @@ function goCreateHabit() {
 }
 
 /**
- * 查看某条习惯的记录。
- */
-function goHabitRecords(habit: TodayHabitDTO) {
-  router.push({
-    name: 'records',
-    query: {
-      habitId: String(habit.habitId),
-      habitName: habit.habitName,
-    },
-  })
-}
-
-/**
  * 读取习惯颜色。
  * 如果后端没有返回颜色，则回退到统一主色。
  */
@@ -223,28 +210,30 @@ onPullDownRefresh(() => {
         @action="authStore.isLoggedIn ? goCreateHabit() : goLogin()"
       >
         <template #metrics>
-          <view class="grid grid-cols-3 gap-3">
-            <view class="rounded-[24rpx] bg-white/12 px-4 py-4 backdrop-blur">
-              <view class="text-xs text-white/70">
+          <view class="habit-metrics-grid">
+            <view class="habit-metric-card">
+              <view class="habit-metric-card__label">
                 今日日期
               </view>
-              <view class="mt-2 text-base font-semibold">
+              <view class="habit-metric-card__value text-[28rpx] !leading-[1.25]">
                 {{ overview.date || '登录后展示' }}
               </view>
             </view>
-            <view class="rounded-[24rpx] bg-white/12 px-4 py-4 backdrop-blur">
-              <view class="text-xs text-white/70">
+            <view class="habit-metric-card">
+              <view class="habit-metric-card__label">
                 今日完成率
               </view>
-              <view class="mt-2 text-2xl font-semibold">
-                {{ completionRate }}%
+              <view class="habit-metric-card__value">
+                {{ completionRate }}<text class="habit-metric-card__suffix">
+                  %
+                </text>
               </view>
             </view>
-            <view class="rounded-[24rpx] bg-white/12 px-4 py-4 backdrop-blur">
-              <view class="text-xs text-white/70">
+            <view class="habit-metric-card">
+              <view class="habit-metric-card__label">
                 今日安排
               </view>
-              <view class="mt-2 text-2xl font-semibold">
+              <view class="habit-metric-card__value">
                 {{ overview.plannedCount }}
               </view>
             </view>
@@ -254,7 +243,7 @@ onPullDownRefresh(() => {
 
       <view v-if="!authStore.isLoggedIn" class="habit-panel mt-4 p-5">
         <view class="flex items-start gap-4">
-          <view class="h-14 w-14 flex shrink-0 items-center justify-center rounded-[24rpx] bg-[#E6F7F4] text-[#0F766E]">
+          <view class="h-14 w-14 flex shrink-0 items-center justify-center rounded-[24rpx] bg-[#EEF1ED] text-[#728D87]">
             <view class="i-solar-star-fall-bold text-[30rpx]" />
           </view>
           <view class="min-w-0 flex-1">
@@ -268,27 +257,27 @@ onPullDownRefresh(() => {
         </view>
 
         <view class="habit-grid mt-5">
-          <view class="habit-feature-card">
-            <view class="text-sm text-[#16332F] font-semibold">
+          <view class="habit-value-card">
+            <view class="habit-value-card__eyebrow">
               创建习惯
             </view>
-            <view class="habit-feature-card__desc">
+            <view class="habit-value-card__desc !mt-3">
               从最容易开始的一条目标先起步。
             </view>
           </view>
-          <view class="habit-feature-card">
-            <view class="text-sm text-[#16332F] font-semibold">
+          <view class="habit-value-card">
+            <view class="habit-value-card__eyebrow">
               每日打卡
             </view>
-            <view class="habit-feature-card__desc">
+            <view class="habit-value-card__desc !mt-3">
               让行动有记录，让节奏能被看见。
             </view>
           </view>
-          <view class="habit-feature-card habit-grid__span-2">
-            <view class="text-sm text-[#16332F] font-semibold">
+          <view class="habit-value-card habit-grid__span-2">
+            <view class="habit-value-card__eyebrow">
               统计反馈
             </view>
-            <view class="habit-feature-card__desc">
+            <view class="habit-value-card__desc !mt-3">
               坚持多久、完成多少、哪里在波动，都能慢慢沉淀下来。
             </view>
           </view>
@@ -317,7 +306,7 @@ onPullDownRefresh(() => {
                   {{ completionText }}
                 </view>
               </view>
-              <view class="h-20 w-20 flex shrink-0 items-center justify-center rounded-[26rpx] bg-[#E6F7F4] text-[#0F766E]">
+              <view class="h-20 w-20 flex shrink-0 items-center justify-center rounded-[26rpx] bg-[#EEF1ED] text-[#728D87]">
                 <view class="i-solar-widget-4-bold text-[34rpx]" />
               </view>
             </view>
@@ -333,6 +322,9 @@ onPullDownRefresh(() => {
             <view class="habit-overview-card__value">
               {{ pendingHabits.length }}
             </view>
+            <view class="habit-overview-card__subvalue">
+              今天还可以继续推进
+            </view>
           </view>
           <view class="habit-overview-card habit-overview-card--accent">
             <view class="habit-overview-card__label">
@@ -341,11 +333,14 @@ onPullDownRefresh(() => {
             <view class="habit-overview-card__value">
               {{ completedHabits.length }}
             </view>
+            <view class="habit-overview-card__subvalue">
+              已经完成的部分会留在记录里
+            </view>
           </view>
         </view>
 
         <view v-if="!hasHabits" class="habit-empty-state mt-4">
-          <view class="mx-auto h-16 w-16 flex items-center justify-center rounded-[28rpx] bg-[#EAF8F6] text-[#0F766E]">
+          <view class="mx-auto h-16 w-16 flex items-center justify-center rounded-[28rpx] bg-[#EEF1ED] text-[#728D87]">
             <view class="i-solar-clipboard-add-bold text-[32rpx]" />
           </view>
           <view class="mt-4 text-lg text-[#16332F] font-semibold">
@@ -376,10 +371,12 @@ onPullDownRefresh(() => {
           >
             <view class="h-2 w-full" :style="{ backgroundColor: getHabitColor(habit) }" />
             <view class="habit-list-card__body">
-              <view class="flex items-start justify-between gap-3">
+              <view class="flex items-start justify-between gap-4">
                 <view class="min-w-0 flex-1">
                   <view class="flex items-center gap-3">
-                    <view class="h-11 w-11 shrink-0 rounded-[20rpx]" :style="{ backgroundColor: `${getHabitColor(habit)}18` }" />
+                    <view class="h-11 w-11 flex shrink-0 items-center justify-center rounded-[20rpx]" :style="{ backgroundColor: `${getHabitColor(habit)}18`, color: getHabitColor(habit) }">
+                      <view :class="`i-solar-${habit.icon || 'star-fall'}-bold text-[24rpx]`" />
+                    </view>
                     <view class="min-w-0 flex-1">
                       <view class="truncate text-base text-[#16332F] font-semibold">
                         {{ habit.habitName }}
@@ -412,14 +409,13 @@ onPullDownRefresh(() => {
               </view>
 
               <view class="habit-list-card__footer">
-                <view
-                  class="flex items-center justify-between rounded-[24rpx] bg-[#F2F8F7] px-4 py-3 text-sm text-[#54706B]"
-                  @tap="goHabitRecords(habit)"
-                >
-                  <text>查看这条习惯的历史记录</text>
-                  <text class="text-[#0F766E] font-semibold">
-                    去查看
-                  </text>
+                <view class="grid grid-cols-1 gap-3">
+                  <view
+                    class="rounded-[24rpx] bg-[#EEF8F5] px-4 py-3 text-center text-sm text-[#19907D]"
+                    @tap="goCreateHabit"
+                  >
+                    新建下一条
+                  </view>
                 </view>
               </view>
             </view>
@@ -445,7 +441,7 @@ onPullDownRefresh(() => {
               <view class="flex items-start justify-between gap-3">
                 <view class="min-w-0 flex-1">
                   <view class="flex items-center gap-3">
-                    <view class="h-11 w-11 flex items-center justify-center rounded-[20rpx] bg-[#E8F7EC] text-[#15803D]">
+                    <view class="h-11 w-11 flex items-center justify-center rounded-[20rpx] bg-[#EEF8F5] text-[#19907D]">
                       <view class="i-solar-check-circle-bold text-[24rpx]" />
                     </view>
                     <view class="min-w-0 flex-1">
@@ -468,6 +464,11 @@ onPullDownRefresh(() => {
                 </view>
                 <view class="habit-pill habit-pill--success">
                   已完成
+                </view>
+              </view>
+              <view class="habit-list-card__footer">
+                <view class="rounded-[24rpx] bg-[#F6F7FB] px-4 py-3 text-center text-sm text-[#656B85]">
+                  已完成的打卡会自动沉淀到记录与统计页中
                 </view>
               </view>
             </view>

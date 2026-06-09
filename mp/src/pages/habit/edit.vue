@@ -14,6 +14,7 @@ definePage({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const systemInfo = useSystemInfo()
 
 /**
  * 每周规则可选项。
@@ -162,6 +163,16 @@ function clearEndDate() {
   form.endDate = null
 }
 
+function handleBack() {
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    router.back()
+  }
+  else {
+    router.pushTab({ name: 'index' })
+  }
+}
+
 /**
  * 处理开始日期选择。
  */
@@ -264,207 +275,243 @@ onShow(() => {
 </script>
 
 <template>
-  <view class="min-h-screen bg-[#f3f6fb] px-5 pb-10 pt-4">
-    <view class="overflow-hidden rounded-[28rpx] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      <view class="relative overflow-hidden from-[#111827] via-[#2563eb] to-[#60a5fa] bg-gradient-to-r p-5 text-white">
-        <view class="absolute h-32 w-32 rounded-full bg-white/10 blur-2xl -right-4 -top-6" />
-        <view class="absolute bottom-0 left-6 h-24 w-24 rounded-full bg-blue-100/15 blur-xl" />
-        <view class="relative z-10 text-lg font-semibold">
-          {{ isEdit ? '编辑习惯' : '新建习惯' }}
+  <view class="habit-page min-h-screen">
+    <view class="habit-shell habit-shell--default">
+      <view class="flex items-center justify-between" :style="{ paddingTop: `${systemInfo.statusBarHeight.value + 8}px` }">
+        <view class="h-11 w-11 flex items-center justify-center rounded-[24rpx] bg-white text-[#23263A] shadow-sm" @tap="handleBack">
+          <view class="i-solar-alt-arrow-left-linear text-[28rpx]" />
         </view>
-        <view class="relative z-10 mt-2 text-sm text-white/80 leading-6">
-          用更清楚的规则和提醒，把想坚持的事真正安排进每天。
+        <view class="text-[24rpx] text-[#656B85] font-medium">
+          HabitLink
         </view>
       </view>
 
-      <view class="grid grid-cols-2 gap-3 p-4">
-        <view class="rounded-2xl bg-[#f8fafc] px-4 py-4">
-          <view class="text-xs text-slate-500">
-            当前模式
-          </view>
-          <view class="mt-2 text-base text-slate-900 font-semibold">
+      <view class="habit-hero mt-4 px-5 pb-6 pt-5">
+        <view class="relative z-10">
+          <view class="habit-pill bg-white/16 text-white/88">
             {{ isEdit ? '编辑已有习惯' : '创建新习惯' }}
           </view>
+          <view class="habit-page-header__title mt-4">
+            {{ isEdit ? '微调这条习惯的节奏' : '把想坚持的事安排进每天' }}
+          </view>
+          <view class="habit-page-header__desc mt-3">
+            从名字、提醒到规则，都尽量保持简单，让这条习惯更容易被真正执行。
+          </view>
         </view>
-        <view class="rounded-2xl bg-[#f8fafc] px-4 py-4">
-          <view class="text-xs text-slate-500">
+      </view>
+
+      <view class="habit-metrics-grid mt-5">
+        <view class="habit-metric-card">
+          <view class="habit-metric-card__label">
+            当前模式
+          </view>
+          <view class="habit-metric-card__value text-[30rpx] !leading-[1.25]">
+            {{ isEdit ? '编辑习惯' : '新建习惯' }}
+          </view>
+        </view>
+        <view class="habit-metric-card">
+          <view class="habit-metric-card__label">
             执行规则
           </view>
-          <view class="mt-2 text-base text-slate-900 font-semibold">
+          <view class="habit-metric-card__value text-[30rpx] !leading-[1.25]">
             {{ rulePreviewText }}
           </view>
         </view>
-      </view>
-    </view>
-
-    <view class="mt-4 rounded-[28rpx] bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      <view class="text-sm text-slate-900 font-semibold">
-        基础信息
-      </view>
-
-      <view class="mb-2 text-xs text-slate-500">
-        习惯名称
-      </view>
-      <input
-        v-model="form.name"
-        class="h-12 rounded-2xl bg-[#f8fafc] px-4 text-sm text-slate-900"
-        placeholder="例如：每天阅读"
-      >
-
-      <view class="mb-2 mt-4 text-xs text-slate-500">
-        习惯描述
-      </view>
-      <textarea
-        v-model="form.description"
-        class="min-h-24 rounded-2xl bg-[#f8fafc] px-4 py-3 text-sm text-slate-900"
-        placeholder="补充说明，例如阅读20分钟"
-      />
-    </view>
-
-    <view class="mt-4 rounded-[28rpx] bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      <view class="text-sm text-slate-900 font-semibold">
-        时间设置
-      </view>
-      <view class="mb-2 mt-4 text-xs text-slate-500">
-        开始日期
-      </view>
-      <picker mode="date" :value="form.startDate" @change="handleStartDateChange">
-        <view class="h-12 flex items-center rounded-2xl bg-[#f8fafc] px-4 text-sm text-slate-900">
-          {{ form.startDate || '请选择开始日期' }}
-        </view>
-      </picker>
-
-      <view class="mb-2 mt-4 text-xs text-slate-500">
-        结束日期
-      </view>
-      <view class="flex items-center gap-3">
-        <picker mode="date" :value="form.endDate || ''" class="flex-1" @change="handleEndDateChange">
-          <view class="h-12 flex items-center rounded-2xl bg-[#f8fafc] px-4 text-sm text-slate-900">
-            {{ form.endDate || '不设置结束日期' }}
+        <view class="habit-metric-card">
+          <view class="habit-metric-card__label">
+            开始日期
           </view>
-        </picker>
-        <view
-          class="rounded-2xl bg-[#eef2ff] px-4 py-3 text-xs text-slate-600"
-          @tap="clearEndDate"
-        >
-          清空
+          <view class="habit-metric-card__value text-[30rpx] !leading-[1.25]">
+            {{ form.startDate }}
+          </view>
         </view>
       </view>
-    </view>
 
-    <view class="mt-4 rounded-[28rpx] bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      <view class="text-sm text-slate-900 font-semibold">
-        提醒与频率
-      </view>
-      <view class="mb-2 mt-4 text-xs text-slate-500">
-        提醒时间
-      </view>
-      <view class="flex gap-3">
-        <view
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.reminderEnabled === 1 ? 'bg-[#0f766e] text-white' : 'bg-[#ecfeff] text-slate-700'"
-          @tap="changeReminderEnabled(1)"
-        >
-          开启提醒
+      <view class="habit-panel mt-5 p-5">
+        <view class="habit-section-title">
+          基础信息
         </view>
-        <view
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.reminderEnabled === 0 ? 'bg-[#0f766e] text-white' : 'bg-[#ecfeff] text-slate-700'"
-          @tap="changeReminderEnabled(0)"
-        >
-          关闭提醒
+        <view class="habit-section-desc mt-2">
+          先给这条习惯一个容易理解、容易记住的名字。
+        </view>
+
+        <view class="mt-5">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            习惯名称
+          </view>
+          <input
+            v-model="form.name"
+            class="h-12 border border-[#E8EBF3] rounded-[24rpx] bg-[#F8FAFD] px-4 text-sm text-[#23263A]"
+            placeholder="例如：每天阅读 20 分钟"
+          >
+        </view>
+
+        <view class="mt-4">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            习惯描述
+          </view>
+          <textarea
+            v-model="form.description"
+            class="min-h-24 border border-[#E8EBF3] rounded-[24rpx] bg-[#F8FAFD] px-4 py-3 text-sm text-[#23263A]"
+            placeholder="补充说明，例如睡前阅读、通勤时学习等"
+          />
         </view>
       </view>
-      <picker
-        v-if="form.reminderEnabled === 1"
-        mode="time"
-        :value="form.reminderTime || '21:00'"
-        @change="handleReminderTimeChange"
+
+      <view class="habit-panel mt-4 p-5">
+        <view class="habit-section-title">
+          时间设置
+        </view>
+        <view class="mt-5">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            开始日期
+          </view>
+          <picker mode="date" :value="form.startDate" @change="handleStartDateChange">
+            <view class="h-12 flex items-center border border-[#E8EBF3] rounded-[24rpx] bg-[#F8FAFD] px-4 text-sm text-[#23263A]">
+              {{ form.startDate || '请选择开始日期' }}
+            </view>
+          </picker>
+        </view>
+
+        <view class="mt-4">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            结束日期
+          </view>
+          <view class="flex items-center gap-3">
+            <picker mode="date" :value="form.endDate || ''" class="flex-1" @change="handleEndDateChange">
+              <view class="h-12 flex items-center border border-[#E8EBF3] rounded-[24rpx] bg-[#F8FAFD] px-4 text-sm text-[#23263A]">
+                {{ form.endDate || '不设置结束日期' }}
+              </view>
+            </picker>
+            <view class="habit-light-button px-4 py-3 text-xs" @tap="clearEndDate">
+              清空
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="habit-panel mt-4 p-5">
+        <view class="habit-section-title">
+          提醒与规则
+        </view>
+
+        <view class="mt-5">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            提醒时间
+          </view>
+          <view class="flex gap-3">
+            <view
+              class="habit-pill px-5 py-3"
+              :class="form.reminderEnabled === 1 ? 'habit-pill--primary' : 'habit-pill--muted'"
+              @tap="changeReminderEnabled(1)"
+            >
+              开启提醒
+            </view>
+            <view
+              class="habit-pill px-5 py-3"
+              :class="form.reminderEnabled === 0 ? 'habit-pill--primary' : 'habit-pill--muted'"
+              @tap="changeReminderEnabled(0)"
+            >
+              关闭提醒
+            </view>
+          </view>
+          <picker
+            v-if="form.reminderEnabled === 1"
+            mode="time"
+            :value="form.reminderTime || '21:00'"
+            @change="handleReminderTimeChange"
+          >
+            <view class="mt-3 h-12 flex items-center border border-[#E8EBF3] rounded-[24rpx] bg-[#F8FAFD] px-4 text-sm text-[#23263A]">
+              {{ form.reminderTime || '请选择提醒时间' }}
+            </view>
+          </picker>
+        </view>
+
+        <view class="mt-5">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            规则类型
+          </view>
+          <view class="flex gap-3">
+            <view
+              class="habit-pill px-5 py-3"
+              :class="form.ruleType === 'DAILY' ? 'habit-pill--primary' : 'habit-pill--muted'"
+              @tap="changeRuleType('DAILY')"
+            >
+              每天
+            </view>
+            <view
+              class="habit-pill px-5 py-3"
+              :class="form.ruleType === 'WEEKLY' ? 'habit-pill--primary' : 'habit-pill--muted'"
+              @tap="changeRuleType('WEEKLY')"
+            >
+              每周
+            </view>
+          </view>
+
+          <view v-if="form.ruleType === 'WEEKLY'" class="mt-3 flex flex-wrap gap-3">
+            <view
+              v-for="item in weekOptions"
+              :key="item.value"
+              class="habit-pill px-5 py-3"
+              :class="form.ruleDays.includes(item.value) ? 'habit-pill--secondary' : 'habit-pill--muted'"
+              @tap="toggleRuleDay(item.value)"
+            >
+              {{ item.label }}
+            </view>
+          </view>
+
+          <view class="mt-4 rounded-[24rpx] bg-[#F6F7FB] px-4 py-4 text-[22rpx] text-[#656B85] leading-7">
+            当前规则：{{ rulePreviewText }}
+          </view>
+        </view>
+      </view>
+
+      <view class="habit-panel mt-4 p-5">
+        <view class="habit-section-title">
+          补打卡设置
+        </view>
+
+        <view class="mt-5">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            是否允许补打卡
+          </view>
+          <view class="flex gap-3">
+            <view
+              class="habit-pill px-5 py-3"
+              :class="form.allowMakeup === 1 ? 'habit-pill--primary' : 'habit-pill--muted'"
+              @tap="changeAllowMakeup(1)"
+            >
+              允许
+            </view>
+            <view
+              class="habit-pill px-5 py-3"
+              :class="form.allowMakeup === 0 ? 'habit-pill--primary' : 'habit-pill--muted'"
+              @tap="changeAllowMakeup(0)"
+            >
+              不允许
+            </view>
+          </view>
+        </view>
+
+        <view v-if="form.allowMakeup === 1" class="mt-4">
+          <view class="mb-2 text-[22rpx] text-[#656B85] font-medium">
+            补打卡天数
+          </view>
+          <input
+            v-model="form.makeupLimitDays"
+            type="number"
+            class="h-12 border border-[#E8EBF3] rounded-[24rpx] bg-[#F8FAFD] px-4 text-sm text-[#23263A]"
+            placeholder="请输入允许补打卡的天数"
+          >
+        </view>
+      </view>
+
+      <view
+        class="habit-primary-button mt-5 py-4 text-center text-sm font-semibold"
+        @tap="submit"
       >
-        <view class="mt-3 h-12 flex items-center rounded-2xl bg-[#f8fafc] px-4 text-sm text-slate-900">
-          {{ form.reminderTime || '请选择提醒时间' }}
-        </view>
-      </picker>
-
-      <view class="mb-2 mt-4 text-xs text-slate-500">
-        规则类型
+        {{ isEdit ? '保存修改' : '创建习惯' }}
       </view>
-      <view class="flex gap-3">
-        <view
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.ruleType === 'DAILY' ? 'bg-[#2563eb] text-white' : 'bg-[#eef2ff] text-slate-700'"
-          @tap="changeRuleType('DAILY')"
-        >
-          每天
-        </view>
-        <view
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.ruleType === 'WEEKLY' ? 'bg-[#2563eb] text-white' : 'bg-[#eef2ff] text-slate-700'"
-          @tap="changeRuleType('WEEKLY')"
-        >
-          每周
-        </view>
-      </view>
-
-      <view v-if="form.ruleType === 'WEEKLY'" class="mt-3 flex flex-wrap gap-3">
-        <view
-          v-for="item in weekOptions"
-          :key="item.value"
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.ruleDays.includes(item.value) ? 'bg-[#dbeafe] text-[#1d4ed8]' : 'bg-[#f8fafc] text-slate-600'"
-          @tap="toggleRuleDay(item.value)"
-        >
-          {{ item.label }}
-        </view>
-      </view>
-
-      <view class="mt-3 rounded-2xl bg-[#f8fafc] px-4 py-3 text-xs text-slate-500">
-        当前规则：{{ rulePreviewText }}
-      </view>
-    </view>
-
-    <view class="mt-4 rounded-[28rpx] bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-      <view class="text-sm text-slate-900 font-semibold">
-        补打卡设置
-      </view>
-      <view class="mb-2 mt-4 text-xs text-slate-500">
-        是否允许补打卡
-      </view>
-      <view class="flex gap-3">
-        <view
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.allowMakeup === 1 ? 'bg-[#0f766e] text-white' : 'bg-[#ecfeff] text-slate-700'"
-          @tap="changeAllowMakeup(1)"
-        >
-          允许
-        </view>
-        <view
-          class="rounded-full px-4 py-2.5 text-sm"
-          :class="form.allowMakeup === 0 ? 'bg-[#0f766e] text-white' : 'bg-[#ecfeff] text-slate-700'"
-          @tap="changeAllowMakeup(0)"
-        >
-          不允许
-        </view>
-      </view>
-
-      <view v-if="form.allowMakeup === 1">
-        <view class="mb-2 mt-4 text-xs text-slate-500">
-          补打卡天数
-        </view>
-        <input
-          v-model="form.makeupLimitDays"
-          type="number"
-          class="h-12 rounded-2xl bg-[#f8fafc] px-4 text-sm text-slate-900"
-          placeholder="请输入允许补打卡的天数"
-        >
-      </view>
-    </view>
-
-    <view
-      class="mt-5 rounded-[28rpx] bg-[#2563eb] py-4 text-center text-sm text-white font-semibold shadow-[0_14px_28px_rgba(37,99,235,0.26)]"
-      @tap="submit"
-    >
-      {{ isEdit ? '保存修改' : '创建习惯' }}
     </view>
   </view>
 </template>

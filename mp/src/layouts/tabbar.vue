@@ -11,7 +11,7 @@ const { theme, isDark, themeVars } = useManualTheme()
  * 底部导航激活色。
  * 这里固定为 HabitLink 新版主色，避免继续出现旧版蓝色调。
  */
-const activeColor = '#0F766E'
+const activeColor = '#728D87'
 
 /**
  * 根据导航项返回对应图标。
@@ -37,7 +37,7 @@ function handleTabbarChange({ value }: { value: string }) {
  * 页面底部占位高度。
  * 为固定底栏和安全区预留空间，避免页面内容被遮挡。
  */
-const tabbarSpacerHeight = computed(() => `${118 + safeAreaInsetsBottom.value}px`)
+const tabbarSpacerHeight = computed(() => `${104 + safeAreaInsetsBottom.value}px`)
 
 onMounted(() => {
   // #ifdef APP
