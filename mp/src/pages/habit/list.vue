@@ -413,7 +413,7 @@ onPullDownRefresh(() => {
               </view>
 
               <view class="habit-list-card__footer">
-                <view class="rounded-[24rpx] bg-[#F5F6F3] px-4 py-4 text-[22rpx] text-[#6F807B] leading-7 mb-4">
+                <view class="mb-4 rounded-[24rpx] bg-[#F5F6F3] px-4 py-4 text-[22rpx] text-[#6F807B] leading-7">
                   {{ habit.allowMakeup === 1 ? `当前允许在 ${habit.makeupLimitDays} 天内补打卡，节奏断了也可以重新接上。` : '当前不支持补打卡，更适合想保持明确边界的习惯。' }}
                 </view>
 
